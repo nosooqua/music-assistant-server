@@ -194,6 +194,9 @@ class SpotifyConnectProvider(PluginProvider):
         await check_output("mkfifo", self.named_pipe)
         await asyncio.sleep(0.1)
         try:
+            # Получаем IP для zeroconf из переменной окружения
+            zeroconf_ip = os.getenv("LIBRESPOT_ZEROCONF_INTERFACE")
+
             args: list[str] = [
                 self._librespot_bin,
                 "--name",
@@ -209,7 +212,6 @@ class SpotifyConnectProvider(PluginProvider):
                 self.named_pipe,
                 "--dither",
                 "none",
-                # disable volume control
                 "--mixer",
                 "softvol",
                 "--volume-ctrl",
@@ -217,11 +219,14 @@ class SpotifyConnectProvider(PluginProvider):
                 "--initial-volume",
                 f"{self.player.volume_level if self.player and self.player.volume_level else 100}",
                 "--enable-volume-normalisation",
-                # forward events to the events script
                 "--onevent",
                 str(EVENTS_SCRIPT),
                 "--emit-sink-events",
             ]
+
+            # Добавляем zeroconf-интерфейс, если задан
+            if zeroconf_ip:
+                args += ["--zeroconf-interface", zeroconf_ip]
             self._librespot_proc = librespot = AsyncProcess(
                 args, stdout=False, stderr=True, name=f"librespot[{self.name}]"
             )
