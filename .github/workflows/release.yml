@@ -17,7 +17,7 @@ jobs:
 
       - name: Build image (linux/amd64)
         run: |
-          docker buildx build \
+          docker buildx build . \
             --platform linux/amd64 \
             --tag music-assistant-nosooqua:x86 \
             --output type=docker,dest=ma-x86.tar
